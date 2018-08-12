@@ -42,7 +42,7 @@ if [ $# -eq 1 ]; then
 
     # Get cookie and csrftoken
     page=$(curl -c $tmpFolder/cookies.txt -b $tmpFolder/cookies.txt https://www.mixcloud.com/$username/$slug/)
-    CSRFToken=$(grep "csrftoken" cookies.txt |awk -F"csrftoken\t" '{ print $NF}'|awk -F"'" '{ print $NR}')
+    CSRFToken=$(grep "csrftoken" $tmpFolder/cookies.txt |awk -F"csrftoken\t" '{ print $NF}'|awk -F"'" '{ print $NR}')
 
     # Get URL for download
     repJson=$(
