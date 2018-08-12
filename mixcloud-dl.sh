@@ -34,13 +34,19 @@ if [ $# -eq 1 ]; then
     username=$(echo $p | awk '{split($0,a,"/"); print a[1]}')
     slug=$(echo $p | awk '{split($0,a,"/"); print a[2]}')
 
+    tmpFolder="./tmp/$username_$slug"
+    mkdir -p $tmpFolder
+    outFolder="./out/$username"
+    mkdir -p $outFolder
+    filename=$slug
+
     # Get cookie and csrftoken
-    page=$(curl -c cookies.txt -b cookies.txt https://www.mixcloud.com/$username/$slug/)
+    page=$(curl -c $tmpFolder/cookies.txt -b $tmpFolder/cookies.txt https://www.mixcloud.com/$username/$slug/)
     CSRFToken=$(grep "csrftoken" cookies.txt |awk -F"csrftoken\t" '{ print $NF}'|awk -F"'" '{ print $NR}')
 
     # Get URL for download
     repJson=$(
-    curl --cookie cookies.txt \
+    curl --cookie $tmpFolder/cookies.txt \
       -H "Content-Type: application/json" \
       -H "X-CSRFToken: $CSRFToken" \
       -H "Referer: $url" \
@@ -54,16 +60,11 @@ if [ $# -eq 1 ]; then
         if [[ $(echo ${url:0:30}) == 'https://waveform.mixcloud.com/' ]]; then
             # $url == https://waveform.mixcloud.com/d/1/d/7/30a2-8bc7-4181-a03b-e713bf5fee31
 
-            tmpFolder="./tmp/$username_$slug"
-            mkdir -p $tmpFolder
-            outFolder="./out/$username"
-            mkdir -p $outFolder
-            filename=$slug
             url="https://testcdn.mixcloud.com/secure/dash2/"${url:30}".m4a"
             # $url == https://testcdn.mixcloud.com/secure/dash2/d/1/d/7/30a2-8bc7-4181-a03b-e713bf5fee31.m4a
 
             wget -c $url/init-a1-x3.mp4 -O $tmpFolder/init-a1-x3.mp4 || exit
-            cat $tmpFolder/init-a1-x3.mp4 > $filename.mp4
+            cat $tmpFolder/init-a1-x3.mp4 > $outFolder/$filename.mp4
             #for i in {1..361}; do
             for i in {1..600}; do # fixme need to fine the true end
                 wget -c $url/fragment-$i-a1-x3.m4s -O $tmpFolder/fragment-$i-a1-x3.m4s || break
@@ -73,7 +74,6 @@ if [ $# -eq 1 ]; then
             ffmpeg -i $outFolder/$filename.mp4 $outFolder/$filename.mp3
             #rm -r $tmpFolder
             rm -f $outFolder/$filename.mp4
-            rm -f cookies.txt
             echo "Done $outFolder/$filename.mp3"
         else
             echo "Error url :-("
