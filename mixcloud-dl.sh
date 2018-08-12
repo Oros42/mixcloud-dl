@@ -56,6 +56,8 @@ if [ $# -eq 1 ]; then
 
             tmpFolder="./tmp/$username_$slug"
             mkdir -p $tmpFolder
+            outFolder="./out/$username"
+            mkdir -p $outFolder
             filename=$slug
             url="https://testcdn.mixcloud.com/secure/dash2/"${url:30}".m4a"
             # $url == https://testcdn.mixcloud.com/secure/dash2/d/1/d/7/30a2-8bc7-4181-a03b-e713bf5fee31.m4a
@@ -65,14 +67,14 @@ if [ $# -eq 1 ]; then
             #for i in {1..361}; do
             for i in {1..600}; do # fixme need to fine the true end
                 wget -c $url/fragment-$i-a1-x3.m4s -O $tmpFolder/fragment-$i-a1-x3.m4s || break
-                cat $tmpFolder/fragment-$i-a1-x3.m4s >> $filename.mp4
+                cat $tmpFolder/fragment-$i-a1-x3.m4s >> $outFolder/$filename.mp4
                 sleep 2
             done
-            ffmpeg -i $filename.mp4 $filename.mp3
-            rm -r $tmpFolder
-            rm -f $filename.mp4
+            ffmpeg -i $outFolder/$filename.mp4 $outFolder/$filename.mp3
+            #rm -r $tmpFolder
+            rm -f $outFolder/$filename.mp4
             rm -f cookies.txt
-            echo "Done $filename.mp3"
+            echo "Done $outFolder/$filename.mp3"
         else
             echo "Error url :-("
         fi
